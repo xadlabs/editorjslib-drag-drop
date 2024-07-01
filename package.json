@@ -1,5 +1,5 @@
 {
-  "name": "@xadlabs/editorjs-drag-drop",
+  "name": "zmeditorjs-drag-drop",
   "version": "1.1.14",
   "keywords": [
     "drag",
@@ -11,7 +11,7 @@
   ],
   "description": "Drag and Drop feature for Editor.js",
   "license": "MIT",
-  "repository": "https://github.com/kommitters/editorjs-drag-drop",
+  "repository": "https://github.com/xadlabs/editorjslib-drag-drop",
   "main": "./dist/bundle.umd.js",
   "module": "./dist/bundle.mjs",
   "exports": {
