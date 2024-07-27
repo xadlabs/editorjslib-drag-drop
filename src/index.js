@@ -17,16 +17,16 @@ export default class DragDrop {
    * @param editor: object
    *   editor — Editor.js instance object
    */
-  constructor({
-    configuration,
-    blocks,
-    toolbar,
-    save,
-  }, borderStyle) {
+  constructor({ configuration, blocks, toolbar, save }, config) {
+    const { borderStyle, onDragEnd } = config || {};
     this.toolbar = toolbar;
-    this.borderStyle = borderStyle || '1px dashed #aaa';
+    this.borderStyle = borderStyle || "1px dashed #aaa";
+    this.onDragEndCallback = onDragEnd || (() => {});
     this.api = blocks;
-    this.holder = typeof configuration.holder === 'string' ? document.getElementById(configuration.holder) : configuration.holder;
+    this.holder =
+      typeof configuration.holder === "string"
+        ? document.getElementById(configuration.holder)
+        : configuration.holder;
     this.readOnly = configuration.readOnly;
     this.startBlock = null;
     this.insertPoint = null;
@@ -41,12 +41,12 @@ export default class DragDrop {
   }
 
   saveInstance() {
-    const editorEl = this.holder.querySelector('.codex-editor');
+    const editorEl = this.holder.querySelector(".codex-editor");
     editorEl.dragDropInstance = this;
   }
 
   getInstance(el) {
-    const editorEl = el.closest('.codex-editor');
+    const editorEl = el.closest(".codex-editor");
     return editorEl.dragDropInstance;
   }
 
@@ -70,18 +70,20 @@ export default class DragDrop {
    */
   setDragListener() {
     if (!this.readOnly) {
-      const settingsButton = this.holder.querySelector('.ce-toolbar__settings-btn');
-      
-      settingsButton.setAttribute('draggable', 'true');
-      settingsButton.addEventListener('dragstart', () => {
+      const settingsButton = this.holder.querySelector(
+        ".ce-toolbar__settings-btn"
+      );
+
+      settingsButton.setAttribute("draggable", "true");
+      settingsButton.addEventListener("dragstart", () => {
         this.startBlock = this.api.getCurrentBlockIndex();
       });
-      settingsButton.addEventListener('dragend', () => {
+      settingsButton.addEventListener("dragend", () => {
         this.onDragEnd();
       });
-      settingsButton.addEventListener('drag', (event) => {
+      settingsButton.addEventListener("drag", (event) => {
         this.toolbar.close(); // this closes the toolbar when we start the drag
-        const dropTarget = document.querySelector('.ce-block--drop-target')
+        const dropTarget = document.querySelector(".ce-block--drop-target");
         if (dropTarget === null) {
           return;
         }
@@ -91,7 +93,7 @@ export default class DragDrop {
           targetInstance.updateTargetBlock(dropTarget);
           if (this.targetInstance && this.targetInstance !== targetInstance) {
             this.targetInstance.updateTargetBlock(null);
-          } 
+          }
         }
         this.targetInstance = targetInstance;
       });
@@ -99,7 +101,7 @@ export default class DragDrop {
   }
 
   updateTargetBlock(block) {
-    const allBlocks = this.holder.querySelectorAll('.ce-block');
+    const allBlocks = this.holder.querySelectorAll(".ce-block");
     this.setElementCursor(block);
     this.setBorderBlocks(allBlocks, block);
   }
@@ -113,11 +115,12 @@ export default class DragDrop {
   setBorderBlocks(allBlocks, blockFocused) {
     const insertPoint = this.insertPoint;
     Object.values(allBlocks).forEach((block, index) => {
-      const blockContent = block.querySelector('.ce-block__content');
-      blockContent.style.removeProperty('border-top');
-      blockContent.style.removeProperty('border-bottom');
+      const blockContent = block.querySelector(".ce-block__content");
+      blockContent.style.removeProperty("border-top");
+      blockContent.style.removeProperty("border-bottom");
       if (blockFocused === block) {
-        if (insertPoint > index) blockContent.style.borderBottom = this.borderStyle;
+        if (insertPoint > index)
+          blockContent.style.borderBottom = this.borderStyle;
         else blockContent.style.borderTop = this.borderStyle;
       }
     });
@@ -127,8 +130,12 @@ export default class DragDrop {
    * Sets the drop events listener.
    */
   setDropListener() {
-    document.addEventListener('drop', (event) => {
-      if (this.startBlock === null || this.insertPoint === null || this.targetInstance === null) {
+    document.addEventListener("drop", (event) => {
+      if (
+        this.startBlock === null ||
+        this.insertPoint === null ||
+        this.targetInstance === null
+      ) {
         return;
       }
       const { target } = event;
@@ -149,8 +156,8 @@ export default class DragDrop {
 
   /**
    * Calculate the position where the dragged block is gonna be placed.
-   * 
-   * @param {DragEvent} event 
+   *
+   * @param {DragEvent} event
    */
   calcInsertPoint(event, targetInstance, block) {
     const blockIndex = Array.from(block.parentNode.children).indexOf(block);
@@ -169,6 +176,7 @@ export default class DragDrop {
     this.updateTargetBlock(null);
     if (this.targetInstance !== this && this.targetInstance) {
       this.targetInstance.updateTargetBlock(null);
+      this.onDragEndCallback();
     }
     this.startBlock = null;
     this.targetInstance = null;
@@ -185,7 +193,10 @@ export default class DragDrop {
        * Same editor instance
        */
       if (!this.isTheOnlyBlock()) {
-        const endBlock = this.startBlock < this.insertPoint ? this.insertPoint - 1 : this.insertPoint;
+        const endBlock =
+          this.startBlock < this.insertPoint
+            ? this.insertPoint - 1
+            : this.insertPoint;
         this.api.move(endBlock, this.startBlock);
       }
     } else {
