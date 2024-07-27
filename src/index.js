@@ -34,8 +34,10 @@ export default class DragDrop {
     this.targetInstance = null;
     this.saveInstance();
 
-    this.setDragListener();
-    this.setDropListener();
+    requestAnimationFrame(() => {
+      this.setDragListener();
+      this.setDropListener();
+    });
   }
 
   saveInstance() {
@@ -69,14 +71,14 @@ export default class DragDrop {
   setDragListener() {
     if (!this.readOnly) {
       const settingsButton = this.holder.querySelector('.ce-toolbar__settings-btn');
-
+      
       settingsButton.setAttribute('draggable', 'true');
       settingsButton.addEventListener('dragstart', () => {
         this.startBlock = this.api.getCurrentBlockIndex();
       });
       settingsButton.addEventListener('dragend', () => {
         this.onDragEnd();
-      })
+      });
       settingsButton.addEventListener('drag', (event) => {
         this.toolbar.close(); // this closes the toolbar when we start the drag
         const dropTarget = document.querySelector('.ce-block--drop-target')
@@ -165,7 +167,7 @@ export default class DragDrop {
 
   onDragEnd() {
     this.updateTargetBlock(null);
-    if (this.targetInstance !== this) {
+    if (this.targetInstance !== this && this.targetInstance) {
       this.targetInstance.updateTargetBlock(null);
     }
     this.startBlock = null;
